@@ -11,15 +11,19 @@ app.use(cors());
 app.use(bodyParser.json());
 const firestore = db.firestore();
 const ludoLogics = require('./Utils/ludoLogics');
-//Routes get
+// Routes get
 const games = require("./Routes/Game");
 
-//app.use
+// app.use
 app.use("/game", games);
 
 app.get("/", (req, res) => {
   res.send("server is running good!");
 });
+
+app.push('/',(req,res)=>{
+    res.send({message : "fuck you"})
+})
 
 
 app.listen(port, () => {
