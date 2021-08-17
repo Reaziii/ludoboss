@@ -1,0 +1,65 @@
+// import React, { useEffect } from 'react';
+// import {View, Text,Button} from 'react-native';
+// import firebase from '@react-native-firebase/app';
+// import {firebaseConfig} from './Utils/firebase';
+// import auth from '@react-native-firebase/auth';
+// import firestore from '@react-native-firebase/firestore'
+// import {GoogleSignin} from '@react-native-google-signin/google-signin'
+// let co = "886359263436-mopj3dslj0efo6ri5ofgc61tqi9ga3p1.apps.googleusercontent.com"
+// function GoogleSignIn() {
+//   return (
+//     <Button
+//       title="Google Sign-In"
+//       onPress={() => onGoogleButtonPress().then(() => console.log('Signed in with Google!'))}
+//     />
+//   );
+// }
+// GoogleSignin.configure({
+//   webClientId: co,
+// });
+// async function onGoogleButtonPress() {
+//   // Get the users ID token
+//   const { idToken } = await GoogleSignin.signIn();
+
+//   // Create a Google credential with the token
+//   const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+
+//   // Sign-in the user with the credential
+//   return auth().signInWithCredential(googleCredential);
+// }
+// if (firebase.apps.length===0) {
+//   firebase.initializeApp(firebaseConfig).then(res=>{
+//     console.log('connected ');
+//   });
+// }
+// if (firebase.apps.length===0) {
+//   firebase.initializeApp(firebaseConfig).then(res=>{
+//     console.log('connected ');
+//   });
+ 
+// }
+// const App = async () => {
+//   // auth().onAuthStateChanged(user=>{
+//   //   console.log(user)
+//   // })
+//   return (
+//     <View>
+//       {/* <GoogleSignIn/> */}
+//     </View>
+//   );
+// };
+
+// export default App;
+
+import React from 'react'
+import { View, Text } from 'react-native'
+
+const App = () => {
+  return (
+    <View>
+      <Text></Text>
+    </View>
+  )
+}
+
+export default App

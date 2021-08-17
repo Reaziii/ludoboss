@@ -10,22 +10,19 @@ app.use(express.json());
 app.use(cors());
 app.use(bodyParser.json());
 const firestore = db.firestore();
-const ludoLogics = require('./Utils/ludoLogics');
+const ludoLogics = require("./Utils/ludoLogics");
 // Routes get
 const games = require("./Routes/Game");
-
+const profile = require("./Routes/profile");
+const user = require("./Routes/User");
 // app.use
 app.use("/game", games);
-
+app.use("/profile", profile);
+app.use("/user", user);
 app.get("/", (req, res) => {
   res.send("server is running good!");
 });
 
-app.push('/',(req,res)=>{
-    res.send({message : "fuck you"})
-})
-
-
-app.listen(port, () => {
-  console.log("server is running at http://localhost:", port, "!");
+app.listen(process.env.PORT || port, () => {
+  console.log(`server is running at http://192.168.1.3:${port}`);
 });

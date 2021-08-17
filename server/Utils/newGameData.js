@@ -1,15 +1,5 @@
 const newGameData = {
-  pos: new Array(200).fill({
-    0: 0,
-    1: 0,
-    2: 0,
-    3: 0,
-  }),
   chal: 0,
-  0: 0,
-  1: 0,
-  2: 0,
-  3: 0,
   dicevalue : 0,
   person: [],
   close: false,
@@ -18,6 +8,14 @@ const newGameData = {
   waitting : true,
   ranks : [],
   isdice : false,
-  round : new Array(200).fill(false),
+  roll : false,
+  0 : new Array(4).fill(-1),
+  1 : new Array(4).fill(-1),
+  2 : new Array(4).fill(-1),
+  3 : new Array(4).fill(-1),
+  persons : [0,1,2,3],
+  start : false,
+  givechal : false,
+  isroom : false,
 };
 module.exports = newGameData;

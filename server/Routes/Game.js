@@ -1,223 +1,223 @@
-const route = require("express").Router();
+const router = require("express").Router();
+const db = require("firebase").firestore();
 const diceRoll = require("../Utils/diceRoll");
 const {
   diceThekeBlockCheck,
   updateToNext,
   nextPos,
-  toPossible,
   goFromTo,
+  toPossible,
 } = require("../Utils/ludoLogics");
-const firestore = require("../firebase/firebase").firestore();
 const newGameData = require("../Utils/newGameData");
-route.post("/diceroll", async (req, res) => {
-  const { chal, userid, gameid } = req.body;
-  if (!gameid) {
-    res.send({ success: "error", message: "game id not found" });
+router.post("/diceroll", (req, res) => {
+  let { chal, gameid } = req.body;
+  if (chal === undefined || gameid === undefined) {
+    res.send({ success: false, message: "chal not found" });
     return;
   }
-  if (chal === undefined) {
-    res.send({ message: "chal not found", success: false });
-    return;
-  }
-  let ref = firestore.collection("games").doc(gameid);
-  await ref.get().then(async (data1) => {
-    if (!data1.exists || data1.data().chal !== chal || !data1.data().isdice) {
-      res.send({ success: false });
-      return;
-    }
-    let six = data1.data().sixcount;
-    let dicevalue = diceRoll();
-
-    if (six === 2) dicevalue = 5;
-    let next = diceThekeBlockCheck(chal, dicevalue, data1.data().pos);
-    if (next.found === false && dicevalue !== 6) {
-      //chal will be gone to next one
-      updateToNext(chal, gameid, data1.data().person);
-      res.send({ success: true, message: "next one" });
-      return;
-    }
-    //chal is available
-    ref
-      .update({
-        isdice: false,
+  let ref = db.collection("games").doc(gameid);
+  ref.get().then(async (ret) => {
+    if (!ret.exists) {
+      res.send({ success: false, message: "gameid is incorrect!" });
+    } else if (ret.data().chal !== chal) {
+      res.send({ success: false, message: "not your chal" });
+    } else if (ret.data().isdice === false) {
+      res.send({ success: false, message: "not dice time" });
+    } else {
+      let dicevalue = diceRoll();
+      let sixcount = ret.data().sixcount;
+      if (dicevalue === 6 && sixcount === 2) {
+        dicevalue = 5;
+      }
+      await ref.update({
         dicevalue: dicevalue,
-        sixcount: dicevalue === 6 ? six + 1 : 0,
-      })
-      .then(() => {
-        res.send({ success: true, message: "update" });
-      })
-      .catch(() => {
-        res.send({ success: false, message: "server error" });
+        roll: true,
+        isdice: false,
       });
+      res.send({ success: true, message: "dice value :", dicevalue });
+      let checker = diceThekeBlockCheck(chal, dicevalue, ret.data()[chal]);
+      // console.log(checker.found)
+      setTimeout(async () => {
+        await ref.update({
+          roll: false,
+          isdice: false,
+          givechal: true,
+          timestamp: new Date().getTime(),
+          sixcount: sixcount + (dicevalue === 6 ? 1 : 0),
+          round: checker.round,
+        });
+      }, 1000);
+      if (checker.found === false && dicevalue !== 6) {
+        setTimeout(() => {
+          updateToNext(chal, gameid, ret.data().persons);
+        }, 2000);
+      }
+
+      // setTimeout(()=>{
+      //   ref.get().then(ret=>{
+      //     let nowtime = new Date.getTime();
+      //     let dist = nowtime-ret.timestamp;
+      //     if(dist>)
+      //   })
+      // },30000)
+    }
   });
 });
 
-route.post("/newgame", async (req, res) => {
-  let { userid, price } = req.body;
-  if (!userid) {
-    res.send({ success: true, message: "user not found" });
+router.post("/uthabe", (req, res) => {
+  let { chal, gameid, id } = req.body;
+  if (chal === undefined || gameid === undefined || id === undefined) {
+    res.send({ success: false, message: "undefined values" });
     return;
   }
-  if (price === undefined) {
-    res.send({ success: false, message: "price not found" });
-    return;
-  }
-  await firestore
-    .collection("games")
-    .add({
-      ...newGameData,
-      person: [userid],
-      0: 4,
-      price,
-    })
-    .then((ret) => {
-      res.send({ success: true, gameid: ret.id });
-    })
-    .catch((err) => {
-      res.send({ success: false, message: err });
-    });
+
+  let ref = db.collection("games").doc(gameid);
+  ref.get().then((ret) => {
+    console.log(ret.data());
+    if (!ret.exists) {
+      res.send({ success: false, message: "gameid incorrect" });
+    } else if (ret.data().dicevalue !== 6) {
+      res.send({ success: false, message: "need 6" });
+    } else if (ret.data().chal !== chal) {
+      res.send({ success: false, message: "not your chal" });
+    } else if (ret.data()[chal][id] !== -1) {
+      res.send({ success: false, message: "your are out of the box" });
+    } else if (ret.data().isdice === true || ret.data().roll === true) {
+      res.send({ success: false, message: "not chal time" });
+    } else {
+      const stop = [0, 13, 26, 39];
+
+      let bar = ret.data()[chal];
+      bar[id] = stop[chal];
+      ref
+        .update({
+          [chal]: bar,
+          givechal: false,
+          isdice: true,
+        })
+        .then(() => {
+          res.send({ success: true, message: "uthano hoise" });
+        });
+    }
+  });
 });
 
-route.post("/searchgame", async (req, res) => {
-  let { userid, price } = req.body;
-  if (!userid) {
-    res.send({ success: true, message: "user not found" });
-    return;
-  }
-  if (price === undefined) {
-    res.send({ success: false, message: "price not found" });
+router.post("/chaldibe", (req, res) => {
+  let { chal, gameid, id } = req.body;
+  if (chal === undefined || gameid === undefined || id === undefined) {
+    res.send({ success: false, message: "undefined values" });
     return;
   }
 
-  price = Number(price);
-  console.log(price);
-  await firestore
-    .collection("games")
-    .get()
-    .then(async (ret) => {
-      let found = 0;
-      await ret.forEach(async (data) => {
-        let item = data.data();
-        if (item.person.length <= 3 && !item.isRoom && item.price === price) {
-          found = data.id;
-        }
-      });
-      if (found === 0) {
-        //create new game
-        await firestore
-          .collection("games")
-          .add({
-            ...newGameData,
-            person: [userid],
-            0: 4,
-            price: price,
-            total: 0,
-          })
-          .then((ret) => {
-            res.send({ success: true, gameid: ret.id });
-          })
-          .catch((err) => {
-            res.send({ success: false, message: err });
-          });
+  let ref = db.collection("games").doc(gameid);
+
+  ref.get().then(async (ret) => {
+    if (
+      ret.data().isdice === true ||
+      ret.data().givechal === false ||
+      ret.data().roll === true
+    ) {
+      res.send({ success: false, message: "not chal time" });
+    } else if (ret.data().chal !== chal) {
+      res.send({ success: false, message: "not your chal" });
+    } else {
+      let bar = ret.data()[chal];
+      let z = ret.data()[0];
+      let o = ret.data()[1];
+      let t = ret.data()[2];
+      let h = ret.data()[3];
+      let nxt = nextPos(chal, bar[id], ret.data().dicevalue);
+
+      if (!toPossible(chal, nxt)) {
+        res.send({ success: false, message: "chal not available" });
       } else {
-        //we have one
-        await firestore
-          .collection("games")
-          .doc(found)
-          .get()
-          .then(async (data1) => {
-            let person = data1.data().person;
-            let id = person.length;
-            person.push(userid);
-            await firestore
-              .collection("games")
-              .doc(found)
-              .update({
-                person,
-                [id]: 4,
-                total: price * (id + 1),
-                waitting: person.length === 4 ? false : true,
-              })
-              .then((get) => {
-                res.send({ success: true, gameid: data1.id });
-              })
-              .catch((err) => {
-                res.send({ success: false });
+        await goFromTo(chal, gameid, bar[id], nxt, bar, id, z, o, t, h).then(
+          (res) => {
+            if (res) {
+              ref.update({
+                sixcount: 0,
               });
-          });
+            }
+            console.log("res", res);
+            setTimeout(() => {
+              if (ret.data().dicevalue !== 6 && !res) {
+                updateToNext(chal, gameid, ret.data().persons);
+              }
+            }, 1000);
+          }
+        );
+
+        res.send({ success: true, message: "chal given" });
+      }
+    }
+  });
+});
+
+router.post("/search", (req, res) => {
+  let { userid, price } = req.body;
+
+  if (userid === undefined || price === undefined) {
+    res.send({ success: false, message: "user id not found!" });
+    return;
+  }
+  console.log(userid, price);
+  console.log(userid, price);
+
+  let ref = db.collection("games");
+
+  ref.get().then(async (ret) => {
+    let found = null;
+    await ret.forEach(async (element) => {
+      if (
+        element.data().person &&
+        element.data().person.length <= 3 &&
+        element.data().start === false &&
+        element.data().price === price
+      ) {
+        // ekhane dhokiye dibo
+        found = element;
       }
     });
-});
 
-route.post("/notonuthabe", async (req, res) => {
-  let { chal, gameid } = req.body;
-  if (chal === undefined) {
-    res.send({ success: false });
-    return;
-  }
-  if (gameid === undefined) {
-    res.send({ success: false });
-    return;
-  }
-  let ref = firestore.collection("games").doc(gameid);
-  await ref.get().then((data) => {
-    if (
-      data.data().chal !== chal ||
-      data.data().isdice ||
-      data.data().dicevalue !== 6 ||
-      data.data()[chal] === 0
-    ) {
-      res.send({ success: false });
-      return;
+    if (found === null) {
+      ref
+        .add({
+          ...newGameData,
+          person: [userid],
+          price: price,
+        })
+        .then((data) => {
+          res.send({ success: true, gameid: data.id, chal: 0 });
+        });
+    } else {
+      let person = found.data().person;
+      person.push(userid);
+      let get = await db
+        .collection("games")
+        .doc(found.id)
+        .update({
+          person: person,
+          start: person.length === 4 ? true : false,
+          isdice: person.length === 4 ? true : false,
+        });
+      res.send({ success: true, gameid: found.id, chal: person.length - 1 });
     }
-    let to =
-      chal === 0 ? 0 : chal === 1 ? 13 : chal === 2 ? 26 : chal === 3 ? 39 : 4;
-    if (chal === 4) {
-      res.send({ success: false });
-      return;
-    }
-    let pos = data.data().pos;
-    pos[to][chal] += 1;
-    ref
-      .update({
-        [chal]: data.data()[chal] - 1,
-        pos: pos,
-      })
-      .then((ret) => {
-        res.send({ success: true });
-      })
-      .catch(() => res.send({ success: false }));
   });
 });
 
-route.post("/chaldibe", async (req, res) => {
-  let { userid, chal, from, gameid } = req.body;
-  if (chal === undefined || from === undefined || gameid === undefined) {
-    res.send({ success: false });
-    return;
-  }
+router.post("/win", async (req, res) => {
+  let { gameid } = req.body;
+  console.log(gameid)
 
-  let ref = firestore.collection("games").doc(gameid);
-  await ref.get().then(async (ret) => {
-    if (ret.data().chal !== chal || ret.data().isdice) {
-      res.send({ success: false });
-      return;
-    }
-    let nxt = nextPos(chal, from, res.data().dicevalue);
-    if(ret.data().pos[from][chal] && toPossible(chal,nxt)){
-        await goFromTo(chal,gameid,from,nxt,ret.data().pos);
-        if(res.data().dicevalue!==6){
-            updateToNext();
-        }
-        res.send({success : true});
-        return ;
-    }
-    else{
-        res.send({success : false});
-        return ;
-    }
-
-  });
+  await db
+    .collection("games")
+    .doc(gameid)
+    .update({
+      0: [57, 57, 57, 52],
+      1: [63, 63, 63, 58],
+      2: [69, 69, 69, 64],
+    });
+  res.send({ success: "ok" });
 });
 
-module.exports = route;
+module.exports = router;

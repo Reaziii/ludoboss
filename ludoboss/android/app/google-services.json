@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "886359263436",
+    "firebase_url": "https://ludoboss-c4324-default-rtdb.firebaseio.com",
+    "project_id": "ludoboss-c4324",
+    "storage_bucket": "ludoboss-c4324.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:886359263436:android:0f6df489a76d07452c5a69",
+        "android_client_info": {
+          "package_name": "com.ludoboss"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "886359263436-27e4d88q0iiq181nmgiq1e8e94tp91f0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ludoboss",
+            "certificate_hash": "094596f5ee07e3bef8a6ceab6f2a8ab9f37610cf"
+          }
+        },
+        {
+          "client_id": "886359263436-mopj3dslj0efo6ri5ofgc61tqi9ga3p1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAj9_PBImhV67QhL410RXKS89VPi0BXdZk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "886359263436-mopj3dslj0efo6ri5ofgc61tqi9ga3p1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
