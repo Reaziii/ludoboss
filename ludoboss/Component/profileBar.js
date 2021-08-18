@@ -12,14 +12,10 @@ import {
 import {useDispatch, useSelector} from 'react-redux';
 import {useHistory} from 'react-router-native';
 import {open_settings} from '../Redux/modal/actions';
-import {backendUrl} from '../Utils/server';
-import Modal from './Modal';
-import Settings from './Settings';
-
-const ProfileNav = ({children}) => {
-  const user = useSelector(state => state.user.user);
+const ProfileNav = () => {
   const profilePic = useSelector(state => state.user.photo);
   const dispatch = useDispatch();
+  const userdata = useSelector(state=>state.user.data);
   const history = useHistory();
   return (
     <View style={{zIndex: 1000}}>
@@ -79,7 +75,7 @@ const ProfileNav = ({children}) => {
                 fontFamily: 'Amaranath-Bold',
                 fontWeight: 'bold',
               }}>
-              1222
+              {userdata.coin}
             </Text>
             <Image
               style={{height: 15, width: 15}}

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const backendUrl = 'http://192.168.1.4:8080/';
+export const backendUrl = 'https://sleepy-bastion-37437.herokuapp.com/';
 
 export const rollDice = async (gameid, chal) => {
   console.log('wait');

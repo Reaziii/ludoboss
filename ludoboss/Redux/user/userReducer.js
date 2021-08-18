@@ -1,6 +1,7 @@
 const init = {
   user: null,
   photo : null,
+  data : {},
 };
 
 const userReducer = (state = init, action = {}) => {
@@ -14,6 +15,11 @@ const userReducer = (state = init, action = {}) => {
       return {
         ...state,
         photo : action.payload
+      }
+    case 'FULL_USER' : 
+      return {
+        ...state,
+        data : action.payload,
       }
     default:
       return state;

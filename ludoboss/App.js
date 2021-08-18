@@ -10,6 +10,7 @@ import axios from 'axios';
 import {backendUrl} from './Utils/server';
 import HomeLoading from './Component/HomeLoading';
 import Profile from './Screens/Profile';
+import firestore from '@react-native-firebase/firestore';
 // Sound.setCategory('Playback');
 const App = () => {
   const dispatch = useDispatch();
@@ -33,6 +34,17 @@ const App = () => {
             payload: res.data.content,
           });
         });
+
+        firestore()
+          .collection('users')
+          .doc(user.uid)
+          .onSnapshot(res => {
+            if (!res.exists) return;
+            dispatch({
+              type: 'FULL_USER',
+              payload: res.data(),
+            });
+          });
         dispatch({
           type: 'LOGIN',
           payload: user,
@@ -59,7 +71,7 @@ const App = () => {
       <Route path="/login" component={Login} exact />
       <Route path="/playground" component={PlayGround} exact />
       <Route path="/searchgame/:price" component={SearchGame} exact />
-      <Route path="/profile" component={Profile} exact/>
+      <Route path="/profile" component={Profile} exact />
     </Switch>
   );
 };

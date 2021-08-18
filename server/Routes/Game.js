@@ -17,7 +17,7 @@ router.post("/diceroll", (req, res) => {
   }
   let ref = db.collection("games").doc(gameid);
   ref.get().then(async (ret) => {
-    if (!ret.exists) {
+    if (!ret.exists || ret.data().close) {
       res.send({ success: false, message: "gameid is incorrect!" });
     } else if (ret.data().chal !== chal) {
       res.send({ success: false, message: "not your chal" });
